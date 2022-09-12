@@ -1,0 +1,6 @@
+openml==0.12.2
+scikit-learn==1.1.2
+flwr==1.0.0
+black==22.8.0
+pylint==2.15.2
+pytest==7.1.3
