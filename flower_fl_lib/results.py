@@ -34,7 +34,9 @@ def reformat(unformatted_data: zip):
     return rows
 
 
-def save_simulation(results: fl.server.history.History, time_stamp: datetime, strat:str) -> None:
+def save_simulation(
+    results: fl.server.history.History, time_stamp: datetime, strat: str
+) -> None:
     # Reformat data
     rows = reformat(
         unformatted_data=zip(
