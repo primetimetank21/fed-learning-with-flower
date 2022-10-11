@@ -22,21 +22,28 @@ def client_fn(cid: str) -> FlowerClient:
     return FlowerClient(net, trainloader, valloader)
 
 
-def save_simulation(results: fl.server.history.History, time_stamp: datetime) -> None:
-    # Reformat data
+def reformat(unformatted_data: zip):
     rows = []
-    for loss, acc in zip(
-        results.losses_distributed, results.metrics_distributed["accuracy"]
-    ):
+    for loss, acc in unformatted_data:
         if loss[0] != acc[0]:
             raise Exception("Mismatched data")
 
         row = {"loss": loss[1], "accuracy": acc[1]}
         rows.append(row)
 
-    field_names = list(rows[0].keys())
+    return rows
+
+
+def save_simulation(results: fl.server.history.History, time_stamp: datetime) -> None:
+    # Reformat data
+    rows = reformat(
+        unformatted_data=zip(
+            results.losses_distributed, results.metrics_distributed["accuracy"]
+        )
+    )
 
     # Write to file
+    field_names = list(rows[0].keys())
     file_time = time_stamp.strftime("%m-%d-%Y_at_%H-%M-%S")
     file_name = f"async_fl_run_{file_time}.csv"
     file_path = Path(f"results/{file_name}")
