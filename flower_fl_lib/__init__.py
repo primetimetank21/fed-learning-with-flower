@@ -3,20 +3,6 @@ from .models import Net, FlowerClient, DEVICE, NUM_CLIENTS, trainloaders, valloa
 from .strategies import STRATEGIES
 
 # Constants
-
-# CLASSES = (
-#     "plane",
-#     "car",
-#     "bird",
-#     "cat",
-#     "deer",
-#     "dog",
-#     "frog",
-#     "horse",
-#     "ship",
-#     "truck",
-# )
-
 FL_NUM_CLIENTS = NUM_CLIENTS
 FL_STRATEGIES = STRATEGIES
 
@@ -35,14 +21,3 @@ def client_fn(cid: str) -> FlowerClient:
 
     # Create a  single Flower client representing a single organization
     return FlowerClient(net, trainloader, valloader)
-
-
-# Create FedAvg strategy
-# strategy = fl.server.strategy.FedAvg(
-#     fraction_fit=1.0,
-#     fraction_evaluate=0.5,
-#     min_fit_clients=10,
-#     min_evaluate_clients=5,
-#     min_available_clients=10,
-#     evaluate_metrics_aggregation_fn=weighted_average,  # <-- pass the metric aggregation function
-# )
