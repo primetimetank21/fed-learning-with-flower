@@ -34,7 +34,7 @@ def reformat(unformatted_data: zip):
     return rows
 
 
-def save_simulation(results: fl.server.history.History, time_stamp: datetime) -> None:
+def save_simulation(results: fl.server.history.History, time_stamp: datetime, strat:str) -> None:
     # Reformat data
     rows = reformat(
         unformatted_data=zip(
@@ -46,7 +46,7 @@ def save_simulation(results: fl.server.history.History, time_stamp: datetime) ->
     field_names = list(rows[0].keys())
     file_time = time_stamp.strftime("%m-%d-%Y_at_%H-%M-%S")
     file_name = f"async_fl_run_{file_time}.csv"
-    file_path = Path(f"results/{file_name}")
+    file_path = Path(f"results/{strat}/{file_name}")
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with file_path.open("w", encoding="utf-8", newline="") as f:
@@ -74,4 +74,4 @@ def run_simulation(
 def async_fl_simulation(strat: str = "best", num_rounds: int = 5) -> None:
     time_stamp = datetime.now()
     data = run_simulation(strat=strat, num_rounds=num_rounds)
-    save_simulation(results=data, time_stamp=time_stamp)
+    save_simulation(results=data, time_stamp=time_stamp, strat=strat)
