@@ -10,7 +10,8 @@ fi
 
 for scenario in "best" "mid" "worst"
     do
-        echo "\nSTARTING '$scenario' SCENARIO\n"
+
+        echo -e "\nSTARTING '$scenario' SCENARIO\n"
         ./main.py --strat=$scenario --num_rounds=$num_rounds
-        echo "\nENDING '$scenario' SCENARIO\n"
+        echo -e "\nENDING '$scenario' SCENARIO\n"
 done
