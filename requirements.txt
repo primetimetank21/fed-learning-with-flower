@@ -1,8 +1,9 @@
 openml==0.12.2
 scikit-learn==1.1.2
-flwr[simulation]
+flwr[simulation]==1.0.0
 torch==1.12.1
 torchvision==0.13.1
 black==22.8.0
 pylint==2.15.2
 pytest==7.1.3
+fire==0.4.0
