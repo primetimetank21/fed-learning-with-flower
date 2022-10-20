@@ -13,13 +13,21 @@ def plot_line(col: pd.core.series.Series, filename: str = "./line_plot.png"):
 
 
 if __name__ == "__main__":
-    scenario_dir_names = [name for name in Path("./results").iterdir()]
+    scenario_dir_names = list(Path("./results").iterdir())
+    Path("./results_metrics").mkdir(parents=True, exist_ok=True)
+
     for scenario in scenario_dir_names:
-        scenario_files = [file_name for file_name in scenario.iterdir()]
+        scenario_files = list(scenario.iterdir())
+        scenario_dir_path = Path(f"./results_metrics/{scenario.name}")
+        scenario_dir_path.mkdir(parents=True, exist_ok=True)
+
         for file_name in scenario_files:
-            print(file_name)
             df = pd.read_csv(file_name)
             plot_name = str(file_name).rsplit("/", maxsplit=1)[-1].replace(".csv", "")
+            Path(f"./{scenario_dir_path}/{plot_name}").mkdir(
+                parents=True, exist_ok=True
+            )
             for feature in df.columns:
-                plot_line(df[feature], f"{plot_name}-{feature}.png")
-            break
+                plot_line(
+                    df[feature], f"./{scenario_dir_path}/{plot_name}/{feature}.png"
+                )
