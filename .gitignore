@@ -134,3 +134,7 @@ dataset
 # Results directories
 results
 results_metrics
+
+# Google Drive API credentials
+credentials.json
+tokens.json
