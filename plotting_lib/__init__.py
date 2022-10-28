@@ -1,7 +1,7 @@
+from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-from pathlib import Path
 
 # from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
@@ -12,7 +12,7 @@ def plot_line(col: pd.core.series.Series, filename: str = "./line_plot.png"):
     plt.clf()
 
 
-if __name__ == "__main__":
+def create_graphs():
     scenario_dir_names = list(Path("./results").iterdir())
     Path("./results_metrics").mkdir(parents=True, exist_ok=True)
 
