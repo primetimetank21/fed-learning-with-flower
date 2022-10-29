@@ -25,29 +25,29 @@ def get_folder_id(file_name: str, servicee, parent_folder_id: str = "") -> str:
             "parents": [parent_folder_id] if parent_folder_id else "",
         }
         file = servicee.files().create(body=file_metadata, fields="id").execute()
-        return file.get("id")
+        return (file.get("id"), False)
 
-    return response["files"][0]["id"]
+    return (response["files"][0]["id"], True)
 
 
-# pylint: disable=fixme
-# TODO: check if dirs/files exist; only upload if not already present
 def save_results_files(
     scenario_dir_names: list, servicee, folder_name: str, folder_ids: list
 ) -> None:
     for scenario_dir in scenario_dir_names:
         scenario_dir_name = str(scenario_dir).rsplit("/", maxsplit=1)[-1]
-        folder_ids[scenario_dir_name] = get_folder_id(
+        folder_ids[scenario_dir_name], _ = get_folder_id(
             scenario_dir_name, servicee, folder_ids[folder_name]
         )
 
         for file_name in Path(f"./{scenario_dir}").iterdir():
             file_name_str = str(file_name).rsplit("/", maxsplit=1)[-1]
-            cur_id = get_folder_id(
+            cur_id, exists = get_folder_id(
                 file_name_str.replace(".csv", ""),
                 servicee,
                 folder_ids[scenario_dir_name],
             )
+            if exists:
+                continue
             file_metadata = {"name": file_name_str, "parents": [cur_id]}
             media = MediaFileUpload(file_name)
             servicee.files().create(
@@ -62,11 +62,24 @@ def save_metrics_files(scenario_dir_names: list, servicee, folder_ids: list) -> 
 
         for file_name in Path(f"./{scenario_dir}").iterdir():
             file_name_str = str(file_name).rsplit("/", maxsplit=1)[-1]
-            folder_ids[file_name_str] = get_folder_id(
+            folder_ids[file_name_str], _ = get_folder_id(
                 file_name_str, servicee, folder_ids[scenario_dir_name]
             )
+
+            files = (
+                servicee.files()
+                .list(
+                    q="mimeType='image/png'", spaces="drive", fields="files(id, name)"
+                )
+                .execute()
+            )
+
+            gdrive_file_names = [file.get("name") for file in files.get("files", [])]
+
             for img_path in Path(file_name).iterdir():
-                img = str(img_path).rsplit("/", maxsplit=1)[-1]
+                img = f"{str(img_path).rsplit('/', maxsplit=1)[-1].replace('.png','')}_for_{file_name_str}.png"
+                if img in gdrive_file_names:
+                    continue
                 file_metadata = {"name": img, "parents": [folder_ids[file_name_str]]}
                 media = MediaFileUpload(img_path)
                 servicee.files().create(
@@ -98,8 +111,8 @@ def upload_to_drive():
     try:
         service = build(serviceName="drive", version="v3", credentials=creds)
         folder_idss = {}
-        folder_idss["top_parent"] = get_folder_id("AsyncFLFolder2022", service)
-        folder_idss["results"] = get_folder_id(
+        folder_idss["top_parent"], _ = get_folder_id("AsyncFLFolder2022", service)
+        folder_idss["results"], _ = get_folder_id(
             "results", service, folder_idss["top_parent"]
         )
         save_results_files(
@@ -108,8 +121,6 @@ def upload_to_drive():
         save_metrics_files(
             list(Path("./results_metrics").iterdir()), service, folder_idss
         )
-
-        print(f"Folder ids: {folder_idss}")
 
     except HttpError as e:
         print(f"Error: {e}")
