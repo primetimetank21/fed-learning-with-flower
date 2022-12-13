@@ -1,3 +1,5 @@
+# pylint: disable-all
+
 import flwr as fl
 from datetime import datetime
 import csv
@@ -7,12 +9,39 @@ from .strategies import STRATEGIES
 from plotting_lib import create_graphs
 from google_drive_lib import upload_to_drive
 
+# for NLP
+from torchtext.datasets import AG_NEWS
+from torchtext.data.utils import get_tokenizer
+from torchtext.vocab import build_vocab_from_iterator
+
+
+# for NLP
+tokenizer = get_tokenizer("basic_english")
+train_iter = AG_NEWS(split="train")
+
+
+def yield_tokens(data_iter):
+    for _, text in data_iter:
+        yield tokenizer(text)
+
+
+vocab = build_vocab_from_iterator(yield_tokens(train_iter), specials=["<unk>"])
+vocab.set_default_index(vocab["<unk>"])
+
+text_pipeline = lambda x: vocab(tokenizer(x))
+label_pipeline = lambda x: int(x) - 1
+
 
 def client_fn(cid: str) -> FlowerClient:
     """Create a Flower client representing a single organization."""
 
     # Load model
-    net = Net().to(DEVICE)
+    # net = Net().to(DEVICE)
+    # for NLP
+    num_class = len(set([label for (label, text) in train_iter]))
+    vocab_size = len(vocab)
+    emsize = 64
+    net = Net(vocab_size, emsize, num_class).to(DEVICE)
 
     # Load data (CIFAR-10)
     # Note: each client gets a different trainloader/valloader, so each client
@@ -50,7 +79,8 @@ def save_simulation(
     field_names = list(rows[0].keys())
     file_time = time_stamp.strftime("%m-%d-%Y_at_%H-%M-%S")
     file_name = f"async_fl_run_{file_time}.csv"
-    file_path = Path(f"results/{strat}/{file_name}")
+    # file_path = Path(f"results/{strat}_mnist/{file_name}")
+    file_path = Path(f"results/{strat}_nlp/{file_name}")
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with file_path.open("w", encoding="utf-8", newline="") as f:

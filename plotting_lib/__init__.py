@@ -6,7 +6,7 @@ import pandas as pd
 # from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 
-def plot_line(col: pd.core.series.Series, filename: str = "./line_plot.png"):
+def plot_line(col: pd.core.series.Series, filename: str = "./line_plot.pdf"):
     sns.lineplot(col)
     plt.savefig(filename)
     plt.clf()
@@ -29,5 +29,5 @@ def create_graphs():
             )
             for feature in df.columns:
                 plot_line(
-                    df[feature], f"./{scenario_dir_path}/{plot_name}/{feature}.png"
+                    df[feature], f"./{scenario_dir_path}/{plot_name}/{feature}.pdf"
                 )

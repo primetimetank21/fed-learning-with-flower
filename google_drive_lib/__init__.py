@@ -111,9 +111,13 @@ def upload_to_drive():
     try:
         service = build(serviceName="drive", version="v3", credentials=creds)
         folder_idss = {}
-        folder_idss["top_parent"], _ = get_folder_id("AsyncFLFolder2022", service)
+        # folder_idss["top_parent"], _ = get_folder_id("AsyncFLFolder2022_mnist", service)
+        folder_idss["top_parent"], _ = get_folder_id("AsyncFLFolder2022_nlp", service)
         folder_idss["results"], _ = get_folder_id(
-            "results", service, folder_idss["top_parent"]
+            # "results_mnist", service, folder_idss["top_parent"]
+            "results_nlp",
+            service,
+            folder_idss["top_parent"],
         )
         save_results_files(
             list(Path("./results").iterdir()), service, "results", folder_idss
