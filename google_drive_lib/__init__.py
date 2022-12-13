@@ -69,7 +69,9 @@ def save_metrics_files(scenario_dir_names: list, servicee, folder_ids: list) -> 
             files = (
                 servicee.files()
                 .list(
-                    q="mimeType='image/png'", spaces="drive", fields="files(id, name)"
+                    q="mimeType='image/png' or mimeType='application/pdf'",
+                    spaces="drive",
+                    fields="files(id, name)",
                 )
                 .execute()
             )
@@ -77,7 +79,7 @@ def save_metrics_files(scenario_dir_names: list, servicee, folder_ids: list) -> 
             gdrive_file_names = [file.get("name") for file in files.get("files", [])]
 
             for img_path in Path(file_name).iterdir():
-                img = f"{str(img_path).rsplit('/', maxsplit=1)[-1].replace('.png','')}_for_{file_name_str}.png"
+                img = f"{str(img_path).rsplit('/', maxsplit=1)[-1].replace('.pdf','')}_for_{file_name_str}.pdf"
                 if img in gdrive_file_names:
                     continue
                 file_metadata = {"name": img, "parents": [folder_ids[file_name_str]]}
