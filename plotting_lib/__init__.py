@@ -8,6 +8,7 @@ import pandas as pd
 
 def plot_line(col: pd.core.series.Series, filename: str = "./line_plot.pdf"):
     sns.lineplot(col)
+    plt.xlabel("epochs")
     plt.savefig(filename)
     plt.clf()
 
