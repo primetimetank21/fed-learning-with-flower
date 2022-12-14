@@ -27,7 +27,7 @@ def load_datasets():
     # Split training set into 10 partitions to simulate the individual dataset
     partition_size = len(trainset) // NUM_CLIENTS
     lengths = [partition_size] * NUM_CLIENTS
-    datasets = random_split(trainset, lengths, torch.Generator().manual_seed(42))
+    datasets = random_split(trainset, lengths, torch.Generator())
 
     # Split each partition into train/val and create DataLoader
     trainloaders = []

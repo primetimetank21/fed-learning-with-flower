@@ -131,5 +131,10 @@ dmypy.json
 # Training Dataset
 dataset
 
-# Results directory
+# Results directories
 results
+results_metrics
+
+# Google Drive API credentials
+credentials.json
+tokens.json
