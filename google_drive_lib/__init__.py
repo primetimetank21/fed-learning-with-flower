@@ -1,11 +1,8 @@
-import os
 from pathlib import Path
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
+from .generate_token import get_token
 
 
 def get_folder_id(file_name: str, servicee, parent_folder_id: str = "") -> str:
@@ -91,24 +88,7 @@ def save_metrics_files(scenario_dir_names: list, servicee, folder_ids: list) -> 
 
 
 def upload_to_drive():
-    SCOPES = ["https://www.googleapis.com/auth/drive"]
-
-    creds = None
-
-    if os.path.exists("tokens.json"):
-        creds = Credentials.from_authorized_user_file("tokens.json", scopes=SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "./google_drive_lib/credentials.json", scopes=SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-
-        with open("tokens.json", "w", encoding="utf-8") as token:
-            token.write(creds.to_json())
+    creds = get_token()
 
     try:
         service = build(serviceName="drive", version="v3", credentials=creds)
