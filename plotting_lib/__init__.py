@@ -32,3 +32,17 @@ def create_graphs():
                 plot_line(
                     df[feature], f"./{scenario_dir_path}/{plot_name}/{feature}.pdf"
                 )
+
+
+def create_comparison_graph(files: list, plot_name: str):
+    scenario_data = [pd.read_csv(file) for file in files]
+    scenario_names = ["best", "middle", "worst"]
+    for feature in scenario_data[0].columns:
+        for i, sd in enumerate(scenario_data):
+            # print(sd[feature])
+            sns.lineplot(sd[feature], label=scenario_names[i].title())
+
+        plt.legend()
+        plt.xlabel("Epochs")
+        plt.savefig(f"{feature}_with_{plot_name}")
+        plt.clf()
