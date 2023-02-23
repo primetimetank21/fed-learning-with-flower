@@ -139,5 +139,8 @@ results_metrics
 credentials.json
 tokens.json
 
+# COBA dataset file (too large for GitHub)
+iobt_128_128.npy
+
 # Etc
 .DS_Store

@@ -5,7 +5,8 @@ from pathlib import Path
 from .models import Net, FlowerClient, DEVICE, NUM_CLIENTS, trainloaders, valloaders
 from .strategies import STRATEGIES
 from plotting_lib import create_graphs
-from google_drive_lib import upload_to_drive
+
+# from google_drive_lib import upload_to_drive
 
 
 def client_fn(cid: str) -> FlowerClient:
@@ -80,4 +81,4 @@ def async_fl_simulation(strat: str = "best", num_rounds: int = 5) -> None:
     data = run_simulation(strat=strat, num_rounds=num_rounds)
     save_simulation(results=data, time_stamp=time_stamp, strat=strat)
     create_graphs()
-    upload_to_drive()
+    # upload_to_drive()

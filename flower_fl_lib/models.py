@@ -6,25 +6,61 @@ from typing import List
 import numpy as np
 import flwr as fl
 from collections import OrderedDict
-from torch.utils.data import DataLoader, random_split
-from torchvision import transforms
-from torchvision.datasets import CIFAR10
+from torch.utils.data import DataLoader, Dataset, random_split
 
-# pylint disables (temporary)
-# pylint: disable=no-member
-# pylint: disable=redefined-outer-name)
+# from torchvision import transforms
+
+# create own Dataset: https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
+
+# pylint: disable=no-member,redefined-outer-name
+
+
+class COBA(Dataset):
+    """Face Landmarks dataset."""
+
+    def __init__(self, filename, train=True, transform=None):
+        """
+        Args:
+            csv_file (string): Path to the csv file with annotations.
+            root_dir (string): Directory with all the images.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        with open(filename, "rb") as f:
+            data, targets = np.load(f), list(np.load(f))
+
+        partition_idx = round(len(data) * 0.8)
+
+        self.data = data[:partition_idx] if train is True else data[partition_idx:]
+        self.targets = (
+            targets[:partition_idx] if train is True else targets[partition_idx:]
+        )
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        # need to return tuple: (data[i] as tensor, targets[i] as int)
+        sample = (torch.tensor(self.data[idx]), int(self.targets[idx]))
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
 
 
 # Dataset Function
 def load_datasets():
-    # Download and transform CIFAR-10 (train and test)
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
-    trainset = CIFAR10("./dataset", train=True, download=True, transform=transform)
-    testset = CIFAR10("./dataset", train=False, download=True, transform=transform)
+    # transform = transforms.Compose(
+    #     [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    # )
 
-    # Split training set into 10 partitions to simulate the individual dataset
+    # need to manually split COBA dataset (80/20)
+    trainset = COBA(filename="iobt_128_128.npy", train=True)
+    testset = COBA(filename="iobt_128_128.npy", train=False)
+
+    # Split training set into NUM_CLIENTS partitions to simulate the individual dataset
     partition_size = len(trainset) // NUM_CLIENTS
     lengths = [partition_size] * NUM_CLIENTS
     datasets = random_split(trainset, lengths, torch.Generator())
@@ -33,7 +69,9 @@ def load_datasets():
     trainloaders = []
     valloaders = []
     for ds in datasets:
-        len_val = len(ds) // 10  # 10 % validation set
+        len_val = (
+            len(ds) // NUM_CLIENTS
+        )  # 13 % validation set --  changed to 13 because of COBA dataset size
         len_train = len(ds) - len_val
         lengths = [len_train, len_val]
         ds_train, ds_val = random_split(ds, lengths, torch.Generator().manual_seed(42))
@@ -45,7 +83,7 @@ def load_datasets():
 
 # Constants
 DEVICE = torch.device("cpu")
-NUM_CLIENTS = 10
+NUM_CLIENTS = 13  # 10
 BATCH_SIZE = 32
 trainloaders, valloaders, testloader = load_datasets()
 
@@ -130,15 +168,15 @@ class FlowerClient(fl.client.NumPyClient):
         self.trainloader = trainloader
         self.valloader = valloader
 
-    def get_parameters(self, config):
+    def get_parameters(self, config=None):
         return get_parameters(self.net)
 
-    def fit(self, parameters, config):
+    def fit(self, parameters, config=None):
         set_parameters(self.net, parameters)
         train(self.net, self.trainloader, epochs=1)
         return get_parameters(self.net), len(self.trainloader), {}
 
-    def evaluate(self, parameters, config):
+    def evaluate(self, parameters, config=None):
         set_parameters(self.net, parameters)
         loss, accuracy = test(self.net, self.valloader)
         return float(loss), len(self.valloader), {"accuracy": float(accuracy)}
