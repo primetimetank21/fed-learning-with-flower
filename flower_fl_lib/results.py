@@ -4,7 +4,10 @@ import csv
 from pathlib import Path
 from .models import Net, FlowerClient, DEVICE, NUM_CLIENTS, trainloaders, valloaders
 from .strategies import STRATEGIES
-from plotting_lib import create_graphs
+
+
+# pylint: disable=unused-import
+from plotting_lib import create_graphs, create_comparison_graph
 from google_drive_lib import upload_to_drive
 
 
@@ -37,7 +40,7 @@ def reformat(unformatted_data: zip):
 
 
 def save_simulation(
-    results: fl.server.history.History, time_stamp: datetime, strat: str
+    results: fl.server.history.History, dir_name: str, strat: str
 ) -> None:
     # Reformat data
     rows = reformat(
@@ -48,9 +51,7 @@ def save_simulation(
 
     # Write to file
     field_names = list(rows[0].keys())
-    file_time = time_stamp.strftime("%m-%d-%Y_at_%H-%M-%S")
-    file_name = f"async_fl_run_{file_time}.csv"
-    file_path = Path(f"results/{strat}/{file_name}")
+    file_path = Path(f"{dir_name}/{strat}.csv")
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with file_path.open("w", encoding="utf-8", newline="") as f:
@@ -75,9 +76,18 @@ def run_simulation(
     )
 
 
-def async_fl_simulation(strat: str = "best", num_rounds: int = 5) -> None:
-    time_stamp = datetime.now()
+def async_fl_simulation(
+    strat: str = "best", num_rounds: int = 5, time_stamp=None
+) -> None:
+    start_time = datetime.now()
+    dir_name = f"async_fl_run_{time_stamp}"
+
     data = run_simulation(strat=strat, num_rounds=num_rounds)
-    save_simulation(results=data, time_stamp=time_stamp, strat=strat)
-    create_graphs()
-    upload_to_drive()
+    save_simulation(results=data, dir_name=dir_name, strat=strat)
+    # create_graphs()
+    create_comparison_graph(dir_name=dir_name, plot_name=f"{num_rounds}_epochs.pdf")
+
+    end_time = datetime.now()
+    surpassed_time = end_time - start_time
+    print(f"Ran in {round(surpassed_time.total_seconds(),3)} seconds")
+    # upload_to_drive()

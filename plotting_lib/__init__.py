@@ -34,15 +34,25 @@ def create_graphs():
                 )
 
 
-def create_comparison_graph(files: list, plot_name: str):
+def create_comparison_graph(dir_name: str, plot_name: str):
+    files = list(Path(dir_name).iterdir())
     scenario_data = [pd.read_csv(file) for file in files]
     scenario_names = ["best", "middle", "worst"]
+    file_path = Path(f"{dir_name}_graphs")
+    file_path.mkdir(parents=True, exist_ok=True)
+    if plot_name[-4:] != ".pdf":
+        plot_name += ".pdf"
+
     for feature in scenario_data[0].columns:
         for i, sd in enumerate(scenario_data):
-            # print(sd[feature])
             sns.lineplot(sd[feature], label=scenario_names[i].title())
 
         plt.legend()
         plt.xlabel("Epochs")
-        plt.savefig(f"{feature}_with_{plot_name}")
+        plt.ylabel(feature.title())
+        plt.savefig(f"{file_path}/{feature}_with_{plot_name}")
         plt.clf()
+
+
+# create_comparison_graph(["./250_epochs/best_250_epochs.csv","./250_epochs/mid_250_epochs.csv","./250_epochs/worst_250_epochs.csv"],
+# "250_epochs.pdf")

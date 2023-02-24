@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 num_rounds=$1
+time_stamp=$(date +"%m-%d-%Y_at_%H-%M-%S")
 
 if [ -z "$num_rounds" ]
 then
@@ -12,6 +13,6 @@ for scenario in "best" "mid" "worst"
     do
 
         echo -e "\nSTARTING '$scenario' SCENARIO\n"
-        ./main.py --strat=$scenario --num_rounds=$num_rounds
+        ./main.py --strat=$scenario --num_rounds=$num_rounds --time_stamp=$time_stamp
         echo -e "\nENDING '$scenario' SCENARIO\n"
 done

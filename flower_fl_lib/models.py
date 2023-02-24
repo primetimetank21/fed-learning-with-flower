@@ -12,7 +12,7 @@ from torchvision.datasets import CIFAR10
 
 # pylint disables (temporary)
 # pylint: disable=no-member
-# pylint: disable=redefined-outer-name)
+# pylint: disable=redefined-outer-name
 
 
 # Dataset Function
