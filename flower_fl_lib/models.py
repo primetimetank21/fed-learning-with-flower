@@ -141,16 +141,57 @@ def test(net, testloader):
     return loss, accuracy
 
 
+# pylint: disable=pointless-string-statement
+"""
+def build_model():
+    seed=268
+    model = Sequential()
+    model.add(Conv2D(filters = 8, kernel_size = (3,3), padding = 'same', activation ='relu', input_shape = (128, 128, 3),
+                    use_bias=False, kernel_initializer = initializer(seed)))
+    model.add(MaxPool2D(pool_size = (2,2), padding = "same"))
+    model.add(Flatten())
+    model.add(Dense(4, activation='relu', use_bias=False, kernel_initializer = initializer(seed)))
+    model.add(Dense(1, activation='sigmoid', use_bias=False, kernel_initializer = initializer(seed)))
+    return model
+
+"""
+
 # Models
 class Net(nn.Module):
     def __init__(self) -> None:
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        layers = []
+        layers.append(
+            nn.Conv2d(
+                in_channels=128 * 128,
+                out_channels=8,
+                kernel_size=(3, 3),
+                padding="same",
+                bias=False,
+            )
+        )
+        layers.append(nn.ReLU())
+        layers.append(nn.MaxPool2d(kernel_size=(2, 2), padding="same"))
+        layers.append(nn.Flatten())
+        layers.append(nn.Linear(in_features=4, out_features=4, bias=False))
+        layers.append(nn.ReLU())
+        layers.append(nn.Linear(in_features=4, out_features=1, bias=False))
+        layers.append(nn.Sigmoid())
+
+        self.model = nn.Sequential(*layers)
+
+        # model.add(Conv2D(filters = 8, kernel_size = (3,3), padding = 'same', activation ='relu', input_shape = (128, 128, 3),use_bias=False, kernel_initializer = initializer(seed)))
+        # model.add(MaxPool2D(pool_size = (2,2), padding = "same"))
+        # model.add(Flatten())
+        # model.add(Dense(4, activation='relu', use_bias=False, kernel_initializer = initializer(seed)))
+        # model.add(Dense(1, activation='sigmoid', use_bias=False, kernel_initializer = initializer(seed)))
+
+        # self.conv1 = nn.Conv2d(3, 6, 5)
+        # self.pool = nn.MaxPool2d(2, 2)
+        # self.conv2 = nn.Conv2d(6, 16, 5)
+        # self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        # self.fc2 = nn.Linear(120, 84)
+        # self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.pool(F.relu(self.conv1(x)))
