@@ -1,8 +1,9 @@
 import flwr as fl
 from datetime import datetime
+import torch.nn as nn
 import csv
 from pathlib import Path
-from .models import Net, FlowerClient, DEVICE, NUM_CLIENTS, trainloaders, valloaders
+from .models import FlowerClient, DEVICE, NUM_CLIENTS, trainloaders, valloaders
 from .strategies import STRATEGIES
 from plotting_lib import create_graphs
 
@@ -13,9 +14,36 @@ def client_fn(cid: str) -> FlowerClient:
     """Create a Flower client representing a single organization."""
 
     # Load model
-    net = Net().to(DEVICE)
+    # net = Net().to(DEVICE)
+    # 3,8,128*128,3,3
+    layers = []
+    layers.append(
+        nn.Conv2d(
+            in_channels=128 * 128,
+            out_channels=8,
+            kernel_size=(3, 3),
+            padding="same",
+            bias=False,
+        )
+    )
+    layers.append(nn.ReLU())
+    layers.append(
+        nn.MaxPool2d(
+            kernel_size=(2, 2),
+            # padding="same"
+        )
+    )
+    layers.append(nn.Flatten())
+    # layers.append(nn.Linear(in_features=4, out_features=4, bias=False))
+    layers.append(nn.Linear(in_features=8, out_features=4, bias=False))
+    layers.append(nn.ReLU())
+    layers.append(nn.Linear(in_features=4, out_features=1, bias=False))
+    layers.append(nn.Sigmoid())
 
-    # Load data (CIFAR-10)
+    # Sequential assistance: https://www.youtube.com/watch?v=bH9Nkg7G8S0
+    net = nn.Sequential(*layers)
+    net.to(DEVICE)
+
     # Note: each client gets a different trainloader/valloader, so each client
     # will train and evaluate on their own unique data
     trainloader = trainloaders[int(cid)]

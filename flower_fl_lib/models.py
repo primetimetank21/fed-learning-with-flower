@@ -1,7 +1,8 @@
 # Imports
-import torch.nn as nn
+# import torch.nn as nn
 import torch
-import torch.nn.functional as F
+
+# import torch.nn.functional as F
 from typing import List
 import numpy as np
 import flwr as fl
@@ -84,7 +85,7 @@ def load_datasets():
 # Constants
 DEVICE = torch.device("cpu")
 NUM_CLIENTS = 13  # 10
-BATCH_SIZE = 32
+BATCH_SIZE = 16  # maybe 32
 trainloaders, valloaders, testloader = load_datasets()
 
 
@@ -157,50 +158,21 @@ def build_model():
 """
 
 # Models
-class Net(nn.Module):
-    def __init__(self) -> None:
-        super(Net, self).__init__()
-        layers = []
-        layers.append(
-            nn.Conv2d(
-                in_channels=128 * 128,
-                out_channels=8,
-                kernel_size=(3, 3),
-                padding="same",
-                bias=False,
-            )
-        )
-        layers.append(nn.ReLU())
-        layers.append(nn.MaxPool2d(kernel_size=(2, 2), padding="same"))
-        layers.append(nn.Flatten())
-        layers.append(nn.Linear(in_features=4, out_features=4, bias=False))
-        layers.append(nn.ReLU())
-        layers.append(nn.Linear(in_features=4, out_features=1, bias=False))
-        layers.append(nn.Sigmoid())
+# class PrintSize(nn.Module):
+#   def __init__(self):
+#     super(PrintSize, self).__init__()
 
-        self.model = nn.Sequential(*layers)
+#   def forward(self, x):
+#     print("SHAPE: ",x.shape)
+#     return x
 
-        # model.add(Conv2D(filters = 8, kernel_size = (3,3), padding = 'same', activation ='relu', input_shape = (128, 128, 3),use_bias=False, kernel_initializer = initializer(seed)))
-        # model.add(MaxPool2D(pool_size = (2,2), padding = "same"))
-        # model.add(Flatten())
-        # model.add(Dense(4, activation='relu', use_bias=False, kernel_initializer = initializer(seed)))
-        # model.add(Dense(1, activation='sigmoid', use_bias=False, kernel_initializer = initializer(seed)))
-
-        # self.conv1 = nn.Conv2d(3, 6, 5)
-        # self.pool = nn.MaxPool2d(2, 2)
-        # self.conv2 = nn.Conv2d(6, 16, 5)
-        # self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        # self.fc2 = nn.Linear(120, 84)
-        # self.fc3 = nn.Linear(84, 10)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+"""
+params = np.random.randn(16,128*128, 3, 3)
+     x = torch.Tensor(params)
+     for layer in client1.net:
+        print(f"{str(layer)[:8]}:",x.size())
+        x = layer(x)
+"""
 
 
 class FlowerClient(fl.client.NumPyClient):
@@ -209,6 +181,7 @@ class FlowerClient(fl.client.NumPyClient):
         self.trainloader = trainloader
         self.valloader = valloader
 
+    # 3,8,128*128,3,3
     def get_parameters(self, config=None):
         return get_parameters(self.net)
 
